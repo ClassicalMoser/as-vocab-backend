@@ -172,20 +172,20 @@ async function getTable(tableRequest) {
 
 app.get('/qb-vocab-table',async (req,res) => {
     const vocabTable = await getTable('vocabulary');
-    console.log(vocabTable);
-    res.json(vocabTable);
+    console.log(await vocabTable);
+    res.json(await vocabTable);
 });
 
 app.get('/qb-lesson-table',async (req,res) => {
     const lessonTable = await getTable('lessons');
-    console.log(lessonTable);
-    res.json(lessonTable);
+    console.log(await lessonTable);
+    res.json(await lessonTable);
 });
 
-app.get('/qb-example-table',async (req,res) => {
+app.get('/qb-example-table', async (req,res) => {
     const exampleTable = await getTable('examples');
-    console.log(exampleTable);
-    res.json(exampleTable);
+    console.log(await exampleTable);
+    res.json(await exampleTable);
 });
 
 app.listen(PORT,()=>console.log('server is listening'));
