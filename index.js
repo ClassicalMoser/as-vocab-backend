@@ -14,39 +14,62 @@ app.use(cors())
 
 const IS_DATABASE_ASCII = true
 
-const TABLE = {
-    VOCABULARY: {
-        NAME: 'vocabulary',
-        ID: 'brrcdgyix',
-        FIELDS: {
-            // id: 3,
-            wordIdiom: 6,
-            use: 7,
-            partOfSpeech: 8,
-            frequencyRank: 14,
-            vocabName: 17
-        }
+const qb = { // quickbaseTablesInfo
+    // This is where all the quickbase table names used to make queries are hardcoded & stored
+    // these are used whenenever a page needs to retrieve, update, or create data on quickbase database
+    studentExamples: {
+        name: 'student-examples',
+        id: 'br3juud42',
+        fields: ['Record ID#', 'Last Reviewed Date', 'Review Interval', 'Related Student', 'Related example', 'Date Created']
     },
-    EXAMPLES: {
-        NAME: 'examples',
-        ID: 'brrcdgyjw',
-        FIELDS: {
-            // id: 3,
-            spanishExample: 6,
-            englishTranslation: 7,
-            vocabIncluded: 15,
-            spanglish: 13
-        }
+    students: {
+        name: 'students',
+        id: 'brrtdx784',
+        fields: ['Record ID#', 'Name']
     },
-    LESSONS: {
-        NAME: 'lessons',
-        ID: 'brrtcungb',
-        FIELDS: {
-            lesson: 6,
-            vocabIncluded: 11
-        }
+    vocabulary: {
+        name: 'vocabulary',
+        id: 'brrcdgyix',
+        fields: ['word/idiom', 'Vocab Name']
     },
-    VOCABULARY_EXAMPLES: 'brrcdgykk'
+    examples: {
+        name: 'examples',
+        id: 'brrcdgyjw',
+        fields: ['Record ID#', 'spanish example', 'english translation', 'vocab included', 'spanglish?']
+    },
+    lessons: {
+        name: 'Lessons',
+        id: 'brrtcungb',
+        fields: ['Lesson', 'Vocab Included']
+        //fields: ['Lesson']
+    }
+}
+
+
+function printFields(json) { 
+    console.log('Fields', json.fields)
+}
+
+// camelizes string and also removes special characters like #
+// for ex: converts 'Record ID#' to 'recordId', 'word/idiom' to 'wordIdiom', 'spanglish?' to 'spanglish'
+function camelize(str) {
+    const strArr = str.replaceAll(/[^\w\s]/gi, ' ')
+    const strArr2 = strArr.split(' ')
+    const camelArr = strArr2.map((word, index) => index === 0 ? word.toLowerCase(): word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    return camelArr.join('')
+}
+
+// creates object that maps fieldNames to their corresponding numbers on quickbase database
+// essentially linking the fields names to the number they are associated with on quickbase
+function createFieldsJSON(fieldNames, jsonFields) {
+    const newArr = fieldNames.map(fieldName => {
+        return {
+            name: camelize(fieldName),
+            number: jsonFields.find(element => element.label.toLowerCase() === fieldName.toLowerCase()).id
+        }
+    })
+    //console.log('createFieldsJSON: ', newArr)
+    return newArr
 }
 
 apiKey = process.env.API_KEY;
@@ -55,7 +78,23 @@ app.get('/',(req,res) => {
     res.json('nothing to see here');
 });
 
-function createLocalTable(tableName, jsonData) {
+function createTable2(data, linksArr) {
+    //console.log('creatTable')
+    return data.map(element => {
+        const stringedJSON = '{' +  linksArr.map(link => { return ('\"' + link.name + '\"' + ':' + null)}).join(', ') + '}'
+        //console.log('stringedJSON: ', stringedJSON)
+        const parsedJSON = JSON.parse(stringedJSON)
+        
+        //console.log('parsedJSON: ', parsedJSON)
+        linksArr.forEach(link => {
+            parsedJSON[link.name] = element[link.number].value
+        });
+        //console.log('parsedJSON2: ', parsedJSON)
+        return parsedJSON
+    })
+}
+
+/*function createLocalTable(tableName, jsonData) {
     let newArr
     switch(tableName) {
         
@@ -95,7 +134,7 @@ function createLocalTable(tableName, jsonData) {
         default:
             //
     }
-}
+}*/
 
 async function getTable(tableRequest) {
     const authorizer = `QB-USER-TOKEN ${apiKey}`;
@@ -110,29 +149,10 @@ async function getTable(tableRequest) {
         return headers
     }
 
-    function createBody(tableName) {
-        let body
-        switch(tableName) {
-            case TABLE.VOCABULARY.NAME:
-                body = {
-                    "from": TABLE.VOCABULARY.ID,
-                    "select": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],
-                }
-                return body
-            case TABLE.EXAMPLES.NAME:
-                body = {
-                    "from": TABLE.EXAMPLES.ID,
-                    "select": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],
-                    //"where": whereClause
-                }
-                return body
-            case TABLE.LESSONS.NAME:
-                body = {
-                    "from": TABLE.LESSONS.ID,
-                    "select": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],
-                }
-                return body
-            default:
+    function createBody(tableID) {
+        return {
+            "from": tableID.id,
+            "select": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],
         }
     }
 
@@ -143,6 +163,8 @@ async function getTable(tableRequest) {
         data: JSON.stringify(createBody(tableRequest)),
         responseType: "arraybuffer"
     }
+    
+    console.log(options);
 
     const jsonTable = await axios.request(options).then((response) => {
         let decodedData = {};
@@ -160,31 +182,38 @@ async function getTable(tableRequest) {
         } else {
             return(`Response: ${response.statusText}`);
         }
-        const objectTable = JSON.parse(decodedData);
-        const filteredTable = createLocalTable(tableRequest,objectTable);
-        const stringyTable = JSON.stringify(filteredTable);
-        return stringyTable
+        const json = JSON.parse(decodedData);
+
+        printFields(json) // don't delete
+
+        const linkedFieldsToNumsArr = createFieldsJSON(tableRequest.fields, json.fields)
+        const tableArr = createTable2(json.data, linkedFieldsToNumsArr)
+        return tableArr
+        //Old Version:
+        //const filteredTable = createLocalTable(tableRequest,objectTable);
+        //const stringyTable = JSON.stringify(filteredTable);
+        //return stringyTable
     })
-    .catch(err => console.log(err))
+    //.catch(err => console.log(err))
 
     return jsonTable;
 }
 
-app.get('/qb-vocab-table',async (req,res) => {
-    const vocabTable = await getTable('vocabulary');
-    console.log(await vocabTable);
+app.get('/qb-vocabulary', async (req,res) => {
+    const vocabTable = await getTable(qb.vocabulary);
+    //console.log(await vocabTable);
     res.json(await vocabTable);
 });
 
-app.get('/qb-lesson-table',async (req,res) => {
-    const lessonTable = await getTable('lessons');
-    console.log(await lessonTable);
+app.get('/qb-lessons', async (req,res) => {
+    const lessonTable = await getTable(qb.lessons);
+    //console.log(await lessonTable);
     res.json(await lessonTable);
 });
 
-app.get('/qb-example-table', async (req,res) => {
-    const exampleTable = await getTable('examples');
-    console.log(await exampleTable);
+app.get('/qb-examples', async (req,res) => {
+    const exampleTable = await getTable(qb.examples);
+    //console.log(await exampleTable);
     res.json(await exampleTable);
 });
 
