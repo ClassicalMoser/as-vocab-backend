@@ -195,13 +195,14 @@ async function getTable(tableRequest) {
         //return stringyTable
     })
     //.catch(err => console.log(err))
-
-    return jsonTable;
+    const jsonStringyTable = JSON.stringify(await jsonTable);
+    return jsonStringyTable;
 }
 
 app.get('/qb-vocabulary', async (req,res) => {
-    const vocabTable = await getTable(qb.vocabulary);
-    //console.log(await vocabTable);
+    const vocabTable = getTable(qb.vocabulary);
+    //const objectVocabTable = {tableArray: await vocabTable};
+    //const stringyVocabTable = JSON.stringify(objectVocabTable)
     res.json(await vocabTable);
 });
 
