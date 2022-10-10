@@ -30,7 +30,7 @@ const qb = { // quickbaseTablesInfo
     vocabulary: {
         name: 'vocabulary',
         id: 'brrcdgyix',
-        fields: ['word/idiom', 'Vocab Name']
+        fields: ['word/idiom', 'Vocab Name', 'frequency rank']
     },
     examples: {
         name: 'examples',
