@@ -40,7 +40,7 @@ const qb = { // quickbaseTablesInfo
     lessons: {
         name: 'Lessons',
         id: 'brrtcungb',
-        fields: ['Lesson', 'Vocab Included']
+        fields: ['Lesson', 'Vocab Included', 'Sort Reference']
         //fields: ['Lesson']
     }
 }
