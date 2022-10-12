@@ -35,7 +35,7 @@ const qb = { // quickbaseTablesInfo
     examples: {
         name: 'examples',
         id: 'brrcdgyjw',
-        fields: ['Record ID#', 'spanish example', 'english translation', 'vocab included', 'spanglish?']
+        fields: ['Record ID#', 'spanish example', 'english translation', 'vocab included', 'spanglish?','Combined Text Student - Name']
     },
     lessons: {
         name: 'Lessons',
@@ -214,6 +214,12 @@ app.get('/qb-lessons', async (req,res) => {
 
 app.get('/qb-examples', async (req,res) => {
     const exampleTable = await getTable(qb.examples);
+    //console.log(await exampleTable);
+    res.json(await exampleTable);
+});
+
+app.get('/qb-students', async (req,res) => {
+    const exampleTable = await getTable(qb.students);
     //console.log(await exampleTable);
     res.json(await exampleTable);
 });
