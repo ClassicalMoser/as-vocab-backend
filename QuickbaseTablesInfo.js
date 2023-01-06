@@ -19,7 +19,7 @@ export const qb = { // quickbaseTablesInfo
     examples: {
         name: 'examples',
         id: 'brrcdgyjw',
-        fields: ['Record ID#', 'spanish example', 'english translation', 'vocab included', 'spanglish?']
+        fields: ['Record ID#', 'spanish example', 'english translation', 'vocab included', 'spanglish?', 'Vocab Complete?']
     },
     lessons: {
         name: 'Lessons',
