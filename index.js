@@ -35,7 +35,7 @@ const qb = { // quickbaseTablesInfo
     examples: {
         name: 'examples',
         id: 'brrcdgyjw',
-        fields: ['Record ID#', 'spanish example', 'english translation', 'vocab included', 'spanglish?','Combined Text Student - Name', 'English Audio', 'Spanish Audio LA']
+        fields: ['Record ID#', 'spanish example', 'english translation', 'vocab included', 'spanglish?','Combined Text Student - Name', 'English Audio', 'Spanish Audio LA', 'Vocab Complete?']
     },
     lessons: {
         name: 'Lessons',
